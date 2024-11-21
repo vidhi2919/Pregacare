@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vaccine Calendar</title>
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css"
+    integrity="sha512-xh6O/CkQoPOWDdYTDqeRdPCVd1SpvCA9XXcUnZS2FmJNp1coAFzvtCN9BmamE+4aHK8yyUHUSCcJHgXloTyT2A=="
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  />
+  <link
+    rel="stylesheet"
+    href="vaccination.css"/>
+</head>
+<body>
+  <div class="container">
+    <div class="left">
+      <div class="calendar">
+        <div class="month">
+          <i class="fas fa-angle-left prev"></i>
+          <div class="date">December 2024</div>
+          <i class="fas fa-angle-right next"></i>
+        </div>
+        <div class="weekdays">
+          <div>Sun</div>
+          <div>Mon</div>
+          <div>Tue</div>
+          <div>Wed</div>
+          <div>Thu</div>
+          <div>Fri</div>
+          <div>Sat</div>
+        </div>
+        <div class="days"></div>
+      </div>
+    </div>
+    <div class="right">
+      <div class="vaccine-schedule">
+        <div class="header">
+          <h3>Vaccine Schedule</h3>
+          <label for="delivery-date">Enter Delivery Date:</label>
+          <input type="date" id="delivery-date" />
+        </div>
+        <div class="schedule">
+          <!-- Vaccine schedule will appear here -->
+        </div>
+        <div class="legend">
+          <div class="legend-item"><div class="legend-color birth"></div> Birth</div>
+          <div class="legend-item"><div class="legend-color six-weeks"></div> 6 Weeks</div>
+          <div class="legend-item"><div class="legend-color ten-weeks"></div> 10 Weeks</div>
+          <div class="legend-item"><div class="legend-color fourteen-weeks"></div> 14 Weeks</div>
+          <div class="legend-item"><div class="legend-color nine-twelve-months"></div> 9-12 Months</div>
+          <div class="legend-item"><div class="legend-color sixteen-twentyfour-months"></div> 16-24 Months</div>
+          <div class="legend-item"><div class="legend-color five-six-years"></div> 5-6 Years</div>
+          <div class="legend-item"><div class="legend-color ten-years"></div> 10 Years</div>
+          <div class="legend-item"><div class="legend-color sixteen-years"></div> 16 Years</div>
+          <div class="legend-item"><div class="legend-color pregnant-mother"></div> Pregnant Mother</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const calendar = document.querySelector('.calendar');
+    const date = document.querySelector('.date');
+    const daysContainer = document.querySelector('.days');
+    const prev = document.querySelector('.prev');
+    const next = document.querySelector('.next');
+    let today = new Date();
+    let activeDay;
+    let month = today.getMonth();
+    let year = today.getFullYear();
+
+    const months = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+
+    function initCalendar() {
+      const firstDay = new Date(year, month, 1);
+      const lastDay = new Date(year, month + 1, 0);
+      const prevLastDay = new Date(year, month, 0);
+      const prevDays = prevLastDay.getDate();
+      const lastDate = lastDay.getDate();
+      const day = firstDay.getDay();
+      const nextDays = 7 - lastDay.getDay() - 1;
+
+      date.innerHTML = `${months[month]} ${year}`;
+      let days = '';
+
+      for (let x = day; x > 0; x--) {
+        days += `<div class="day prev-date">${prevDays - x + 1}</div>`;
+      }
+
+      for (let i = 1; i <= lastDate; i++) {
+        if (i === today.getDate() && year === today.getFullYear() && month === today.getMonth()) {
+          activeDay = i;
+          days += `<div class="day today active">${i}</div>`;
+        } else {
+          days += `<div class="day">${i}</div>`;
+        }
+      }
+
+      for (let j = 1; j <= nextDays; j++) {
+        days += `<div class="day next-date">${j}</div>`;
+      }
+
+      daysContainer.innerHTML = days;
+      addListener();
+    }
+
+    prev.addEventListener('click', () => {
+      month--;
+      if (month < 0) {
+        month = 11;
+        year--;
+      }
+      initCalendar();
+    });
+
+    next.addEventListener('click', () => {
+      month++;
+      if (month > 11) {
+        month = 0;
+        year++;
+      }
+      initCalendar();
+    });
+
+    initCalendar();
+
+    function addListener() {
+      const days = document.querySelectorAll('.day');
+      days.forEach((day) => {
+        day.addEventListener('click', (e) => {
+          const clickedDay = Number(e.target.innerHTML);
+          activeDay = clickedDay;
+        //   e.target.classList.add('active');
+        });
+      });
+    }
+
+    const deliveryDateInput = document.getElementById('delivery-date');
+    const vaccineScheduleContainer = document.querySelector('.schedule');
+
+    deliveryDateInput.addEventListener('change', () => {
+      const deliveryDate = new Date(deliveryDateInput.value);
+      if (deliveryDate) {
+        const vaccineSchedule = calculateVaccineSchedule(deliveryDate);
+        displayVaccineSchedule(vaccineSchedule);
+      }
+    });
+
+    function calculateVaccineSchedule(deliveryDate) {
+      return [
+        { title: 'BCG, OPV-0, Hepatitis B', date: deliveryDate, details: 'At birth', color: 'birth' },
+        { title: 'OPV-1, Pentavalent-1, RVV-1, fIPV-1, PCV-1', date: addDays(deliveryDate, 42), details: '6 Weeks', color: 'six-weeks' },
+        { title: 'OPV-2, Pentavalent-2, RVV-2', date: addDays(deliveryDate, 70), details: '10 Weeks', color: 'ten-weeks' },
+        { title: 'OPV-3, Pentavalent-3, fIPV-2, RVV-3, PCV-2', date: addDays(deliveryDate, 98), details: '14 Weeks', color: 'fourteen-weeks' },
+        { title: 'MR-1, JE-1, PCV-Booster', date: addDays(deliveryDate, 274), details: '9-12 Months', color: 'nine-twelve-months' },
+        { title: 'MR-2, JE-2, DPT-Booster-1, OPV-Booster', date: addDays(deliveryDate, 487), details: '16-24 Months', color: 'sixteen-twentyfour-months' },
+        { title: 'DPT-Booster-2 Vaccine', date: addDays(deliveryDate, 1825), details: '5-6 Years', color: 'five-six-years' },
+        { title: 'Td (Tetanus, adult Diphtheria)', date: addDays(deliveryDate, 3650), details: '10 Years', color: 'ten-years' },
+        { title: 'Td (Tetanus, adult Diptheria)', date: addDays(deliveryDate, 5840), details: '16 Years', color: 'sixteen-years' },
+        { title: 'Td-1, Td-2 or Td-Booster', date: addDays(deliveryDate, 0), details: 'Pregnant Mother', color: 'pregnant-mother' },
+      ];
+    }
+
+    function addDays(date, days) {
+      const result = new Date(date);
+      result.setDate(result.getDate() + days);
+      return result;
+    }
+
+    function displayVaccineSchedule(vaccineSchedule) {
+      vaccineScheduleContainer.innerHTML = '';
+      vaccineSchedule.forEach((vaccine) => {
+        const vaccineElement = document.createElement('div');
+        vaccineElement.classList.add('event', vaccine.color);
+        vaccineElement.innerHTML = `<span class="event-title">${vaccine.title}</span><br><span class="event-details">${vaccine.date.toDateString()}</span><br><span class="event-details">${vaccine.details}</span>`;
+        
+        vaccineElement.addEventListener('click', () => {
+          addEventToCalendar(vaccine.date, vaccine.title);
+        });
+
+        vaccineScheduleContainer.appendChild(vaccineElement);
+      });
+    }
+
+    function addEventToCalendar(date, eventTitle) {
+      const eventDay = date.getDate();
+      const eventMonth = date.getMonth();
+      const eventYear = date.getFullYear();
+
+      if (eventMonth === month && eventYear === year) {
+        const dayElements = document.querySelectorAll('.day');
+        dayElements.forEach(dayElement => {
+          if (Number(dayElement.textContent) === eventDay && !dayElement.classList.contains('prev-date') && !dayElement.classList.contains('next-date')) {
+            const eventMarker = document.createElement('div');
+            eventMarker.classList.add('event');
+            eventMarker.innerHTML = `<span class="event-title">${eventTitle}</span>`;
+            dayElement.appendChild(eventMarker);
+          }
+        });
+      } else {
+        month = eventMonth;
+        year = eventYear;
+        initCalendar();
+        addEventToCalendar(date, eventTitle);
+      }
+    }
+  </script>
+</body>
+</html>
